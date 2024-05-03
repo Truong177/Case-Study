@@ -117,10 +117,32 @@ function setDirection(event) {
         directionsQueue.push(newDirection);
     }
 }
+function hitWall() {
+    const head = snake[0];
+    return (
+        head.x < 0 || head.x >= horizontalSq || head.y < 0 || head.y >= verticalSq
+    );
+}
+function hitSelf() {
+    const snakeBody = snake.slice();
+    const head = snakeBody.shift();
+    let found = false;
+    for (let square of snakeBody) {
+        if (square.x === head.x && square.y === head.y) {
+            found = true;
+            break;
+        }
+    }
+    return found;
+}
 function frame() {
     drawBoard();
     drawFood();
     drawSnake();
     moveSnake();
+
+    if (hitWall() || hitSelf()) {
+        clearInterval(gameLoop);
+    }
 }
 frame();
