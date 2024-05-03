@@ -8,6 +8,8 @@ let bodycolor = '#999';
 let gameStarted = false;
 const FPS = 1000 / 10;
 let gameLoop;
+let score = 0;
+let maxScore = 0;
 function drawBoard() {
     ctx.fillStyle = boardcolor;
     ctx.fillRect(0, 0, width, height);
@@ -85,6 +87,7 @@ function moveSnake() {
             break;
     }
     if (hasEatenFood()) {
+        increaseScore();
         food = createFood();
     } else {
         snake.pop();
@@ -135,14 +138,56 @@ function hitSelf() {
     }
     return found;
 }
+function increaseScore() {
+    score++;
+    document.getElementById('score').innerHTML = '⭐ Score ' +score;
+}
+function highScore() {
+    if (score > maxScore){
+        maxScore = score;
+        document.getElementById('high-score').innerHTML ='🏆 High Score ' +maxScore;
+    }
+}
+document.getElementById('high-score').innerHTML = '🏆 High Score: ' + maxScore;
+function gameOver(message) {
+    clearInterval(gameLoop);
+    showGameOver(message);
+}
+
+function showGameOver(message) {
+    ctx.fillStyle = '#FFF';
+    ctx.font = '30px Arial';
+    ctx.fillText(message, width / 2 - 80, height / 2);
+    gameStarted = false;
+    resetGame();
+}
+function resetGame() {
+    score = 0;
+    document.getElementById('score').innerHTML = '⭐ Score ' +score;
+    snake = [
+        { x: 2, y: 0 },
+        { x: 1, y: 0 },
+        { x: 0, y: 0 },
+    ];
+    currentDirection = '';
+    directionsQueue = [];
+    food = createFood();
+}
+const playAgainBtn = document.getElementById('play-again-button');
+playAgainBtn.addEventListener('click', function() {
+    clearInterval(gameLoop);
+    resetGame();
+    gameLoop = setInterval(frame, FPS);
+});
 function frame() {
     drawBoard();
     drawFood();
     drawSnake();
     moveSnake();
-
+    highScore()
     if (hitWall() || hitSelf()) {
         clearInterval(gameLoop);
+        gameOver('Game Over!');
     }
 }
 frame();
