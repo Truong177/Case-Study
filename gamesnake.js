@@ -5,6 +5,9 @@ const height = cvs.height;
 let boardcolor = '#000000';
 let headcolor = '#FFF';
 let bodycolor = '#999';
+let gameStarted = false;
+const FPS = 1000 / 10;
+let gameLoop;
 function drawBoard() {
     ctx.fillStyle = boardcolor;
     ctx.fillRect(0, 0, width, height);
@@ -53,9 +56,71 @@ let food = createFood();
 function drawFood() {
     drawSquare(food.x, food.y, '#F95700');
 }
+let currentDirection = '';
+let directionsQueue = [];
+const directions = {
+    RIGHT: 'ArrowRight',
+    LEFT: 'ArrowLeft',
+    UP: 'ArrowUp',
+    DOWN: 'ArrowDown',
+};
+function moveSnake() {
+    if (!gameStarted) return;
+    const head = { x: snake[0].x, y: snake[0].y };
+    if (directionsQueue.length){
+        currentDirection = directionsQueue.shift();
+    }
+    switch (currentDirection) {
+        case directions.RIGHT:
+            head.x += 1;
+            break;
+        case directions.LEFT:
+            head.x -= 1;
+            break;
+        case directions.UP:
+            head.y -= 1;
+            break;
+        case directions.DOWN:
+            head.y += 1;
+            break;
+    }
+    if (hasEatenFood()) {
+        food = createFood();
+    } else {
+        snake.pop();
+    }
+    snake.unshift(head);
+}
+function hasEatenFood() {
+    const head = snake[0];
+    return head.x === food.x && head.y === food.y;
+}
+document.addEventListener('keyup', setDirection);
+function setDirection(event) {
+    const newDirection = event.key;
+    const oldDirection = currentDirection;
+
+    if (
+        (newDirection === directions.LEFT &&
+            oldDirection !== directions.RIGHT) ||
+        (newDirection === directions.RIGHT &&
+            oldDirection !== directions.LEFT) ||
+        (newDirection === directions.UP &&
+            oldDirection !== directions.DOWN) ||
+        (newDirection === directions.DOWN &&
+            oldDirection !== directions.UP)
+    ) {
+        if (!gameStarted) {
+            gameStarted = true;
+            gameLoop = setInterval(frame, FPS);
+        }
+        directionsQueue.push(newDirection);
+    }
+}
 function frame() {
     drawBoard();
     drawFood();
     drawSnake();
+    moveSnake();
 }
 frame();
